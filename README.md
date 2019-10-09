@@ -298,7 +298,7 @@ fi
 function runMjpgStreamer {
     input=$1
     pushd $MJPGSTREAMER_HOME
-    echo Running ./mjpg_streamer -o "output_http.so -w ./www" -i "$input"
+    echo Running ./mjpg_streamer -o "output_http.so -l 127.0.0.1 -w ./www" -i "$input"
     LD_LIBRARY_PATH=. ./mjpg_streamer -o "output_http.so -w ./www" -i "$input"
     popd
 }
@@ -412,3 +412,5 @@ To do so, simply isntall the ToucheUI plugin from OctoPrint system plugin menu.
 # TODO
 * add SSL to HAProxy configuration in order to secure network communication from clients to OctoPrint.
 * restrict mjpg_streamer webserver to be only accessible localy from the EeePC.
+* redo installation without window manager (Ubuntu server + x and touchUI autostart :https://github.com/BillyBlaze/OctoPrint-TouchUI-autostart )
+* add action to turn on and off the printer from OctoPrint, via Jeedom
