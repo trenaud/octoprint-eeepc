@@ -354,6 +354,14 @@ system:
      command: /var/octoprint/scripts/webcam stop
      confirm: false
      name: Stop video stream
+   - action: printeron
+     command: curl "http://<yourJeedomURL>/core/api/jeeApi.php?apikey=<yourAPIKey>&type=cmd&id=<yourCmdID>"
+     confirm: false
+     name: Turn on Anet A8
+   - action: printeroff
+     command: curl "http://<yourJeedomURL>/core/api/jeeApi.php?apikey=<yourAPIKey>&type=cmd&id=<yourCmdID>"
+     confirm: "ATTENTION ! Vous allez éteindre l'imprimante 3D !"
+     name: Turn off Anet A8
 ```
 
 Finally, logout from octoprint user (`exit`).
@@ -411,6 +419,4 @@ To do so, simply isntall the ToucheUI plugin from OctoPrint system plugin menu.
 
 # TODO
 * add SSL to HAProxy configuration in order to secure network communication from clients to OctoPrint.
-* restrict mjpg_streamer webserver to be only accessible localy from the EeePC.
 * redo installation without window manager (Ubuntu server + x and touchUI autostart :https://github.com/BillyBlaze/OctoPrint-TouchUI-autostart )
-* add action to turn on and off the printer from OctoPrint, via Jeedom
