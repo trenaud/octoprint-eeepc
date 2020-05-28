@@ -2,17 +2,19 @@
 This project is a guide and files to convert an old eeePC to an OctoPrint station in order to manage my 3D printer in my workshop.
 
 # Disclaimer
-English is not my natural language, and I did not spend a lot of time to write beautifull sentences and text for this guide... If I've time in the future I'll try to correct it and make it more readable.
+English is not my native language, and I did not spend a lot of time writing beautiful sentences for this guide.
 
-The important thing for me when writing this guide was to store all the steps that I made to achieve my goal of using this old EeePC as an OctoPrint server and "local station".
+The important thing for me when writing this guide was to record all the steps that I made to achieve my goal of using this old EeePC as an OctoPrint server and "local station".
 
 # Prerequities
 ## Skills
 I'm very familiar with Linux OS, and I will use command line tools because I'm more efficient using a keyboard than a mouse.
-So most of instructions will be described using a terminal.
+So most instructions will be terminal commands.
 
 ## Hardware
 I have an old Asus EeePC T101MT, with a touchscreen. The battery is dead, but everything else is working fine (touchscreen, keyboard, touchpad, network...). As I'm not using it anymore, it would be great to give it a second life, by making it a control station for my 3D Printer (ANET A8).
+
+(Also confirmed to work with the EeePC 1005-HA (no touchscreen) and the Monoprice Select Mini v2.)
 
 This will let me control the printer when I'm close to it, with the EeePC touchscreen, and also when I'm away, via network.
 
@@ -20,21 +22,21 @@ And to be perfect, adding a webcam will be great to check regularly if printing 
 
 ## Software
 ### OS
-The EeePC is an old and not powerfull computer, so I will use a small linux distribution, like [Lubuntu](https://lubuntu.net/).
+The EeePC is old and not a powerful computer, so I will use a lightweight Linux distribution, like [Lubuntu](https://lubuntu.net/).
 
-Later I'll maybe try an ubuntu server, add a X server with no window manager, and start only the tool to control the printer (via [chromium in kiosk mode](https://www.sylvaindurand.fr/launch-chromium-in-kiosk-mode/) for example) if the Lubuntu don't feed my needs.
+Later I'll maybe try Ubuntu Server, add an X server with no window manager, and start only the tool to control the printer (via [Chromium in kiosk mode](https://www.sylvaindurand.fr/launch-chromium-in-kiosk-mode/) for example) if Lubuntu performs unsatisfactory.
 
 ### Printer control
-I'll use [OctoPrint](https://octoprint.org) because I can use it localy (displaying it in a webbrowser on the EeePC) and remotely (on my desktop computer, or smartphone, even when I'm not at home).
+I'll use [OctoPrint](https://octoprint.org) because I can use it locally (displaying it in a web browser on the EeePC) and remotely (on my desktop computer, or smartphone, even when I'm not at home).
 
 # Installation
 ## OS
-So, I decided to try a Lubuntu linux. Doing this I could use the EeePC as a little computer in my workshop when needed to search things on the Internet. But by default, it will always display the OctoPrint tool.
+So, I decided to try Lubuntu Linux. Doing this I could use the EeePC as a little computer in my workshop when need to search things on the Internet. But by default, it will always display the OctoPrint tool.
 
-Go to [Lunbuntu website](https://lubuntu.net),  [download Lubuntu](https://lubuntu.net/downloads/), and install it following [official docs](https://docs.lubuntu.net/lubuntu_installation).
+Go to the [Lunbuntu website](https://lubuntu.net),  [download Lubuntu](https://lubuntu.net/downloads/), and install it following [official docs](https://docs.lubuntu.net/lubuntu_installation).
 
-Once this is done, you have a plenty fonctionnal linux system, and a user, with a graphical interface.
-Connect with your user credentials (created during installation), open a terminal and update your OS :
+Once this is done, you have a functional Linux system, and a user, with a graphical interface.
+Connect with your user credentials (created during installation), open a terminal and update your OS:
 ```
 sudo apt update
 sudo apt upgrade
@@ -44,54 +46,56 @@ This section will describe all steps to install OctoPrint and make it always ope
 
 This solution is based on the [OctoPrint Raspbian installation guide](https://community.octoprint.org/t/setting-up-octoprint-on-a-raspberry-pi-running-raspbian/2337)
 
-In short, we will perform those tasks :
-0. make the Lunbuntu accessible via SSH for remote administration
-1. create a sytem user that will run the OctoPrint service
-2. install all python packages needed to perform OctoPrint installation
-3. install OctoPrint
-4. configure a service to run OctoPrint as a daemon
-5. add a proxy to make OctoPrint accessible via simple URLs (without the 5000 port info)
-6. configure mjpeg-streamer to add a webcam to OctoPrint
-7. make OctoPrint to be displayed automatically at EeePC startup (and always be opened, even if closed accidentally).
-8. give OctoPrint the rights to restart the system
-9. add a touchUI plugin, to make OctoPrint more Usable on the little screen of the EeePC
+### Overview
+In short, we will perform these tasks:
+0. Make the Lunbuntu accessible via SSH for remote administration
+1. Create a sytem user that will run the OctoPrint service
+2. Install all Python packages needed to perform the OctoPrint installation
+3. Install OctoPrint
+4. Configure a service to run OctoPrint as a daemon
+5. Add a proxy to make OctoPrint accessible via simple URLs (without the port 5000 info)
+6. Configure `mjpg-streamer` to add a webcam to OctoPrint
+7. Make OctoPrint open automatically at EeePC startup (and always be open, even if closed accidentally).
+8. Give OctoPrint the rights to restart the system
+9. Add a touchUI plugin, to make OctoPrint more usable on the little screen of the EeePC
 
-OK, now time for action !
+OK, now time for action!
 
-### Add ssh access
-Simply install the OpenSSH Server package to Lubuntu.
+### Add SSH Access
+Simply install the OpenSSH Server package in Lubuntu.
 
-In a terminal :
+In a terminal:
 ```
 sudo apt install openssh-server
 ```
+This allows the remainder of this guide to be followed remotely, should you choose to.
 
-### Create octoprint System user
+### Create OctoPrint System User
 Then, we need to create a system user that will be used to run OctoPrint as a daemon or system service.
 
-In a terminal :
+In a terminal:
 ```
 sudo groupadd -r octoprint
 sudo useradd -r -g octoprint -d "/var/octoprint" -s "/bin/bash" octoprint
-sudo mkdir -p /var/octoprint/
+sudo mkdir -p /var/octoprint
 sudo usermod -a -G tty octoprint
 sudo usermod -a -G dialout octoprint
 sudo usermod -a -G video octoprint
 sudo chown octoprint:octoprint -R /var/octoprint
 ```
 
-*TODO : add a detailed description of each command, what it does and what is it for*
+*TODO: add a detailed description of each command, what it does and what is it for*
 
-### Install Python packages
-This step is to install all python packages needed to perform OctoPrint installation.
+### Install Prerequisite Python Packages
+This step is to install all Python packages needed to perform the OctoPrint installation.
 
-In a terminal :
+In a terminal:
 ```
 sudo apt install python-pip python-dev python-setuptools python-virtualenv git libyaml-dev build-essential
 ```
 
 ### Install OctoPrint
-A simple but important step, this is the OctoPrint installation :
+A simple but important step, this is the OctoPrint installation:
 
 ```
 sudo su octoprint
@@ -104,26 +108,27 @@ pip install octoprint
 deactivate
 ```
 
-Verify that OctoPrint is correctly installed and can run :
+Verify that OctoPrint is correctly installed and can run:
 ```
 ./octoprint-venv/bin/octoprint serve
 ```
 
-Should display a lot of output. Wait until output stop to display new lines, and open a Firefox to the localhost URL `http://localhost:5000`. The OctoPrint configuration screen should display.
+Running the above command should result in a lot of output. Wait until the output stops displaying new lines, and open a web browser to visit http://localhost:5000 (if performing these steps over SSH, substitute `localhost` with the EeePCs IP). The OctoPrint configuration screen should be displayed.
 
 *TODO : add a screenshot*
 
-If everything is good, stop the OctoPrint server using `CTRL-C` and disconnect from octoprint user :
+If everything is as expected, stop the OctoPrint server using `Ctrl-C` and return to your user from the octoprint user:
 ```
 exit
 cd ~
 ```
 
-### Run OctoPrint as a daemon
-In this section we will install and configure a service to run OctoPrint as a system daemon. Doing this, it will always be running, even after a system restart.
+### Run OctoPrint as a Daemon
+In this section we will install and configure a service to run OctoPrint as a system daemon. This ensures it will always be running, even after a system restart.
 
 Service scripts are available at [OctoPrint github page](https://github.com/foosel/OctoPrint).
 
+#### Option A: Init Scripts
 ```
 wget https://github.com/foosel/OctoPrint/raw/master/scripts/octoprint.init
 sudo mv octoprint.init /etc/init.d/octoprint
@@ -132,7 +137,7 @@ wget https://github.com/foosel/OctoPrint/raw/master/scripts/octoprint.default
 sudo mv octoprint.default /etc/default/octoprint
 ```
 
-Then we need to configure the service. Open `/etc/default/octoprint` with your prefered text editor, and change configuration like this :
+Then we need to configure the service. Open `/etc/default/octoprint` with your prefered text editor, and change configuration to match this:
 
 ```
 # Configuration for /etc/init.d/octoprint
@@ -166,34 +171,63 @@ NICELEVEL=-2
 START=yes
 ```
 
-Changes are made for : OCTOPRINT_USER, BASEDIR, CONFIGFILE, DAEMON.
+Changes are made to: OCTOPRINT_USER, BASEDIR, CONFIGFILE, and DAEMON.
 
-Then add the script to default runlevel whith :
+Then add the script to default runlevel with:
 ```
 sudo update-rc.d octoprint defaults
 ```
+#### Option B: SystemD Service
+In your home directory, fetch the systemd service file:
+```
+wget https://github.com/foosel/OctoPrint/raw/master/scripts/octoprint.service
+```
+Edit the file to match:
+```
+[Unit]
+Description=The snappy web interface for your 3D printer
+After=network-online.target
+Wants=network-online.target
 
-And finally, you can start/stop/restart the OctoPrint daemon using command :
+[Service]
+Type=simple
+User=octoprint
+ExecStart=/var/octoprint/octoprint-vdev/bin/octoprint
+Nice=-2
+
+[Install]
+WantedBy=multi-user.target
+```
+`ExecStart` was changed, and `Nice` was added.
+
+Next, run the following:
+```
+sudo mv octoprint.service /etc/systemd/system/octoprint.service
+sudo chmod +x /etc/systemd/system/octoprint.service
+sudo systemctl daemon-reload
+```
+#### Run OctoPrint
+And finally, you can start/stop/restart the OctoPrint daemon using command:
 ```
 sudo service octoprint {start|stop|restart}
 ```
 
-For now, start the octoprint service : `sudo service octoprint start` and check that it is running by opening `http://localhost:5000` in a web browser.
+For now, start the octoprint service with: `sudo service octoprint start` and check that it is running by opening http://localhost:5000 in a web browser (again, substituting `localhost` with the EeePC's IP if performing these steps remotely).
 
-### Make OctoPrint accessible via simple URLs
-As the octoprint user is not at root level, it cannot make the OctoPrint server to listen on port 80.
+### Make OctoPrint Accessible via Simple URLs
+As the `octoprint` user is not at root level, it cannot make the OctoPrint server to listen on port 80.
 
-So, to make OctoPrint accessible using normal http port (80), we need to install a reverse proxy. We will use HAProxy as it is simple to configure.
+So, to make OctoPrint accessible via the normal HTTP port (80), we need to install a reverse proxy. We will use HAProxy as it is simple to configure.
 
-In a terminal :
+In a terminal:
 ```
 sudo apt install haproxy
 ```
 
-Then we need to configure haproxy. Open `/etc/haproxy/haproxy.cfg` and add three sections at the end (after general and defaults): frontend public, backend octoprint, backend webcam. (this last section is needed if you adda a webcam to OctoPrint, as described later in this guide)
+Then we need to configure HAproxy. Open `/etc/haproxy/haproxy.cfg` and add three sections at the end (after general and defaults): `frontend public`, `backend octoprint`, `backend webcam`. (this last section is needed if you add a a webcam to OctoPrint, as described later in this guide)
 
 ```
-frontend pfrontend public
+frontend pfrontend
         bind :::80 v4v6
         use_backend webcam if { path_beg /webcam/ }
         default_backend octoprint
@@ -208,14 +242,14 @@ backend webcam
         server webcam1  127.0.0.1:8080
 ```
 
-Then restart the HAProxy service :
+Then restart the HAProxy service:
 ```
 sudo service haproxy restart
 ```
 
-And check if OctoPrint is accessible using `http://localhost` url in a web browser.
+And check if OctoPrint is accessible by visiting http://localhost in a web browser.
 
-A last thing to do is to restrict OctoPrint to bind only to the loopback interface, for security reasons. Open the file /var/octoprint/.octoprint/config.yaml and add this line in the `server` section :
+One last thing to do is to restrict OctoPrint to bind only to the loopback interface, for security reasons. Open the file `/var/octoprint/.octoprint/config.yaml` and add this line in the `server` section:
 ```
     host: 127.0.0.1
 ```
@@ -223,39 +257,39 @@ A last thing to do is to restrict OctoPrint to bind only to the loopback interfa
 Then restart octoprint service `sudo service octoprint restart`.
 
 ### Plug Printer and Webcam
-It is time to plug the 3D printer to the EeePC and add a webcam.
+It is time to connect the 3D printer to the EeePC and add a webcam.
 I plugged them using USB.
 I checked the webcam is workging with Cheese, a small tool to test webcams.
 
 ### Add a webcam to OctoPrint
-To be able to stream images from printing process, we need to install mjpg_streamer tool.
+To be able to stream images from printing process, we need to install the `mjpg_streamer` tool.
 
-This is done with those commands :
+This is done with those commands:
 ```
+sudo apt install cmake libjpeg9-dev libjpeg-turbo8-dev ffmpeg
 sudo su octoprint
 cd ~
-sudo apt install cmake libjpeg9-dev libjpeg-turbo8-dev ffmpeg
 git clone https://github.com/jacksonliam/mjpg-streamer.git
 cd mjpg-streamer/mjpg-streamer-experimental
 make
 ```
-To test if mjpg-streamer works with your webcam, run this command :
+To test if mjpg-streamer works with your webcam, run this command:
 ```
 ./mjpg_streamer -i "./input_uvc.so -y -d /dev/video2" -o "./output_http.so -w ./www"
 ```
-Note : change /dev/video2 to the one corresponding to your webcam.
+Note: change `/dev/video2` to the one corresponding to your webcam.
 
-Then open a browser localy and go to url `http://localhost:8080/` ; you should see a web page with lot of informations about mjpg_streamer, and a tab named "Strem" on wich you should see the output of your webcam.
+Then open a browser localy and go to url http://localhost:8080; you should see a web page with a lot of information about `mjpg_streamer`, and a tab named "Stream" in wich you should see the output of your webcam.
 
-Stop the stream using `CTRL-C`.
+Stop the stream using `Ctrl-C`.
 
 Now, we will add scripts to be able to start and stop webcam from OctoPrint.
 
-Create script directory :
+Create script directory:
 ```
-mkdir scripts
+mkdir ~/scripts
 ```
-then create the file `~/scripts/webcam` and insert its content :
+then create the file `~/scripts/webcam` and insert its content:
 ```
 #!/bin/bash
 # Start / stop streamer daemon
@@ -276,7 +310,7 @@ case "$1" in
 esac
 ```
 
-Create another file : `~/scripts/webcamDaemon` and add its content :
+Create another file: `~/scripts/webcamDaemon` and add its content:
 ```
 #!/bin/bash
 
@@ -335,9 +369,9 @@ while true; do
     sleep 120
 done
 ```
-**Important : in this script, you must adapt configuration for your needs : camera, camera_raspi_options, camera_usb_options.**
+**Important: in this script, you must adapt configuration for your needs: camera, camera_raspi_options, camera_usb_options.**
 
-Make both files executable :
+Make both files executable by only user `octoprint`:
 ```
 chmod u+x ~/scripts/*
 ```
@@ -364,16 +398,16 @@ system:
      name: Turn off Anet A8
 ```
 
-Finally, logout from octoprint user (`exit`).
+Finally, logout from the `octoprint` user (`exit`).
 
 ### Configure OctoPrint
 Now, it is time to configure OctoPrint by following the Setup Wizard displayed when you go to OctoPrint URL.
 
 I decided to do this remotely from my desktop computer.
 
-For more information how to seupt OctoPrint, please refer to the official documentation.
+For more information how to setup OctoPrint, please refer to the official documentation.
 
-Some settings to setup in the wizard :
+Some settings to setup in the wizard:
 * Server commands section
   * Restart OctoPrint: `sudo service octoprint restart`
   * Restart system: `sudo shutdown -r now`
@@ -385,16 +419,16 @@ Some settings to setup in the wizard :
 
 
 ### make OctoPrint to be displayed automatically at EeePC startup
-I created a new user (`impression3D`) using Lubuntu system tools, I made the taskbar "retractable", and disable desktop icons.
+I created a new user (`impression3D`) using Lubuntu system tools, I made the taskbar "retractable", and disabled desktop icons.
 
-Then create this little script (named `/home/impression3D/.bin/start_firefox.sh`) that will launch Firefox and put it in fullscreen mode :
+Then create this little script (named `/home/impression3D/.bin/start_firefox.sh`) that will launch Firefox and put it in fullscreen mode:
 ```
 #!/bin/bash
 firefox -url http://localhost/ &
 xdotool search --sync --onlyvisible --class "Firefox" windowactivate key F11
 ```
 
-You need to install `xdotool` for the script to run, and make the script executable :
+You need to install `xdotool` for the script to run, and make the script executable:
 ```
 sudo apt install xdotool
 chmod u+x ~/.bin/start_firefox.sh
@@ -402,21 +436,21 @@ chmod u+x ~/.bin/start_firefox.sh
 
 Finally, add this script in the autostart configuration of Lubuntu (using system config tools).
 
-### give OctoPrint the rights to restart the system and to restart itself
-By default, the octoprint system user do not have rights to use the sudo command. And even if it could, it does not have any password, so it could not be able to perform credential validations.
+### Give OctoPrint the Rights to Restart the System and to Restart Itself
+By default, the `octoprint` system user does not have permission to use the `sudo` command. And even if it could, it does not have a password, so it would not be able to perform credential validation.
 
-The solution is to give octoprint user the rights to run only the needed commands using sudo and without the need of typing password.
+The solution is to give the `octoprint` user permission to run only the needed commands using `sudo` without entering a password.
 
-This is done by adding a configuration file for sudoer : `/etc/sudoers.d/octoprint-shutdown`.
+This is done by adding a configuration file for sudoers: `/etc/sudoers.d/octoprint-shutdown`.
 
-So create that file and add this content :
+So create that file and add this content:
 ```
 octoprint ALL=NOPASSWD: /bin/shutdown, /usr/sbin/service
 ```
 
-### add a touchUI plugin, to make OctoPrint more Usable on the little screen of the EeePC
-To do so, simply isntall the ToucheUI plugin from OctoPrint system plugin menu.
+### Add the TouchUI Plugin to Make OctoPrint More Usable on the Little Screen of the EeePC
+To do so, simply install the TouchUI plugin from the OctoPrint system plugin menu.
 
 # TODO
 * add SSL to HAProxy configuration in order to secure network communication from clients to OctoPrint.
-* redo installation without window manager (Ubuntu server + x and touchUI autostart :https://github.com/BillyBlaze/OctoPrint-TouchUI-autostart )
+* redo installation without window manager (Ubuntu Server + X and TouchUI autostart: https://github.com/BillyBlaze/OctoPrint-TouchUI-autostart)
