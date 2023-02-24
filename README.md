@@ -91,7 +91,7 @@ This step is to install all Python packages needed to perform the OctoPrint inst
 
 In a terminal:
 ```
-sudo apt install python3 python3-pip python3-dev python3-setuptools python3-venv git libyaml-dev build-essential libffi-dev libssl-dev
+sudo apt install python3 python3-pip python3-dev python3-setuptools python3-venv python3-virtualenv git libyaml-dev build-essential libffi-dev libssl-dev
 ```
 
 ### Install OctoPrint
