@@ -6,7 +6,7 @@ English is not my native language, and I did not spend a lot of time writing bea
 
 The important thing for me when writing this guide was to record all the steps that I made to achieve my goal of using this old EeePC as an OctoPrint server and "local station".
 
-# Prerequities
+# Prerequisites
 ## Skills
 I'm very familiar with Linux OS, and I will use command line tools because I'm more efficient using a keyboard than a mouse.
 So most instructions will be terminal commands.
@@ -91,7 +91,7 @@ This step is to install all Python packages needed to perform the OctoPrint inst
 
 In a terminal:
 ```
-sudo apt install python-pip python-dev python-setuptools python-virtualenv git libyaml-dev build-essential
+sudo apt install python3 python3-pip python3-dev python3-setuptools python3-venv git libyaml-dev build-essential libffi-dev libssl-dev
 ```
 
 ### Install OctoPrint
